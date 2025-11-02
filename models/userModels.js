@@ -45,30 +45,30 @@ exports.findByCredentials = async (username, password) => {
 exports.findVulnerable = async (username, password) => {
   const query = `
     SELECT id, name, username, email FROM users
-    WHERE username = '${username}' AND password = '${password}'
+    WHERE username = $1 AND password = $2
   `;  
   try {
-    const result = await pool.query(query);
+    const result = await pool.query(query, [username, password]);
     if (result.rows.length === 0) {
       return null;
     }
     return result.rows;
   } catch (err) {
-    console.error("Query execution failed:", err.message);
-    throw err;
+    console.error("Query execution error");
+    throw new Error("Authentication failed");
   }
 };
 
 exports.findPasswordByCredentials = async (username, password) => {
   const query = `
     SELECT username, password FROM users
-    WHERE username = '${username}' AND password = '${password}'
+    WHERE username = $1 AND password = $2
   `;
   try {
-    const result = await pool.query(query);
+    const result = await pool.query(query, [username, password]);
     return result.rows;
   } catch (err) {
-    console.error("Query execution failed:", err.message);
-    throw err;
+    console.error("Query execution error");
+    throw new Error("Failed to retrieve credentials");
   }
 };

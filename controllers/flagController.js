@@ -7,6 +7,6 @@ exports.validateFlags = async (req, res) => {
         return res.json(result);
     } catch (error) {
         console.error("Error validating flags:", error);
-        return res.status(500).json({ error: "Internal server error" });
+        return res.status(500).json({ error: "An error occurred" });
     }
 }
