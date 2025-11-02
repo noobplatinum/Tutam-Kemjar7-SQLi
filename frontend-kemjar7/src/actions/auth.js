@@ -10,9 +10,6 @@ export async function loginUser(username, password) {
     });
     return response.data;
   } catch (error) {
-    if (error.response?.data?.error) {
-      throw new Error(error.response.data.error);
-    }
-    throw new Error('Login failed. Please try again.');
+    throw new Error('Authentication failed');
   }
 }

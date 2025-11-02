@@ -10,9 +10,6 @@ export async function getPassword(username, password) {
     });
     return response.data;
   } catch (error) {
-    if (error.response?.data?.error) {
-      throw new Error(error.response.data.error);
-    }
-    throw new Error('Failed to retrieve password. Please try again.');
+    throw new Error('Verification failed');
   }
 }

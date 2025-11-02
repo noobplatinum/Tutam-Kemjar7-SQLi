@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { loginUser } from "./actions/auth";
+import { sanitizeInput, validateUsername, validatePassword } from "./utils/validation";
 import netlabLogo from "./assets/netlab2.svg";
 
 function LoginPage() {
@@ -13,24 +14,44 @@ function LoginPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    const cleanUsername = sanitizeInput(username);
+    const cleanPassword = sanitizeInput(password);
+    
+    if (!validateUsername(cleanUsername)) {
+      setMessage({ 
+        text: "Username must be 3-50 alphanumeric characters", 
+        type: "error" 
+      });
+      return;
+    }
+    
+    if (!validatePassword(cleanPassword)) {
+      setMessage({ 
+        text: "Invalid password format", 
+        type: "error" 
+      });
+      return;
+    }
+    
     setIsLoading(true);
     setMessage({ text: "", type: "" });
 
     try {
-      const data = await loginUser(username, password);
-      const overFlag = data.user.length > 1 ? 1 : 0;
-
-      if (overFlag === 0) {
+      const data = await loginUser(cleanUsername, cleanPassword);
+      
+      // Only accept single user login
+      if (data.user && data.user.length === 1) {
         localStorage.setItem("userData", JSON.stringify(data.user[0]));
         navigate("/home");
       } else {
         setMessage({
-          text: "Hello: " + data.user.map((u) => u.name).join(", "),
-          type: "success",
+          text: "Authentication failed",
+          type: "error",
         });
       }
     } catch (err) {
-      setMessage({ text: err.message, type: "error" });
+      setMessage({ text: "Authentication failed", type: "error" });
     } finally {
       setIsLoading(false);
     }

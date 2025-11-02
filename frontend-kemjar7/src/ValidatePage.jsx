@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { validateFlags } from "./actions/flagActions";
+import { validateFlag } from "./utils/validation";
 
 function ValidatePage() {
   const navigate = useNavigate();
@@ -30,6 +31,15 @@ function ValidatePage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    if (!validateFlag(flag)) {
+      setMessage({
+        text: "Invalid flag format",
+        type: "error",
+      });
+      return;
+    }
+    
     setIsLoading(true);
     setMessage({ text: "", type: "" });
 
@@ -38,8 +48,7 @@ function ValidatePage() {
         throw new Error("User ID not found in local storage.");
       }
 
-      const data = await validateFlags(userId, flag);
-      console.log("Response:", data);
+      const data = await validateFlags(userId, flag.trim());
 
       const result = data?.data?.[0];
 
@@ -56,7 +65,7 @@ function ValidatePage() {
       }
     } catch (err) {
       setMessage({
-        text: err.message || "Failed to validate flag.",
+        text: "Failed to validate flag",
         type: "error",
       });
     } finally {

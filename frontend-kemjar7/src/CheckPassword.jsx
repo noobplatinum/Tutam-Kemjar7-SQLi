@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { getPassword } from "./actions/usersActions";
+import { sanitizeInput, validateUsername, validatePassword } from "./utils/validation";
 
 function CheckPasswordPage() {
     const navigate = useNavigate();
@@ -11,37 +12,45 @@ function CheckPasswordPage() {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        
+        const cleanUsername = sanitizeInput(username);
+        const cleanPassword = sanitizeInput(password);
+        
+        if (!validateUsername(cleanUsername)) {
+            setMessage({ 
+                text: "Username must be 3-50 alphanumeric characters", 
+                type: "error" 
+            });
+            return;
+        }
+        
+        if (!validatePassword(cleanPassword)) {
+            setMessage({ 
+                text: "Invalid password format", 
+                type: "error" 
+            });
+            return;
+        }
+        
         setIsLoading(true);
         setMessage({ text: "", type: "" });
 
         try {
-            const data = await getPassword(username, password);
-            console.log(data);
+            const data = await getPassword(cleanUsername, cleanPassword);
 
-            if (Array.isArray(data.response) && data.response.length > 0) {
-                const entries = data.response
-                    .map(
-                        (item, i) =>
-                            `Your username is ${item.username}, and your password is correct`
-                    )
-                    .join("\n");
-
+            if (data.response && data.response.length === 1) {
                 setMessage({
-                    text: entries,
+                    text: "Password verified successfully",
                     type: "success",
                 });
             } else {
                 setMessage({
-                    text:
-                        "Password is correct!" +
-                        (data?.response?.username
-                            ? ` (Username: ${data.response.username})`
-                            : ""),
-                    type: "success",
+                    text: "Verification failed",
+                    type: "error",
                 });
             }
         } catch (err) {
-            setMessage({ text: err.message || "Incorrect password", type: "error" });
+            setMessage({ text: "Verification failed", type: "error" });
         } finally {
             setIsLoading(false);
         }
